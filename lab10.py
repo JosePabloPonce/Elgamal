@@ -1,5 +1,6 @@
 import random
 from math import pow
+import base64
  
 a = random.randint(2, 10)
 
@@ -64,7 +65,39 @@ def generarPrimo():
         x=random.randrange(10000,100000) 
         if(esprimo(x)==True):
             return x
+        
+def encrypt(msg, q, h, g, clave):
+ 
+    en_msg = []
+ 
+    k = clave
+    s = modulo(h, k, q)
+    p = modulo(g, k, q)
+     
+    for i in range(0, len(msg)):
+        en_msg.append(msg[i])
+ 
+    print("g^k used : ", p)
+    print("g^ak used : ", s)
+    for i in range(0, len(en_msg)):
+        en_msg[i] = s * ord(en_msg[i])
+        
+    concatenado = ""
+    for i in en_msg:
+        concatenado += str(i)
+    encodedBytes = base64.b64encode(concatenado.encode("utf-8"))
+    encodedStr = str(encodedBytes, "utf-8")
+    print(encodedStr)
+    return en_msg, p
 
+def decrypt(en_msg, p, key, q):
+ 
+    dr_msg = []
+    h = modulo(p, key, q)
+    for i in range(0, len(en_msg)):
+        dr_msg.append(chr(int(en_msg[i]/h)))
+         
+    return dr_msg
 while True:
     print("1. Generar claves")
     print("2. Encriptar mensaje")
@@ -74,14 +107,14 @@ while True:
     
     if(opcion == "1"):
         print("Generar Claves")
-        p = generarPrimo()
-        g = random.randint(2, p)
-        claveprivada = generarClave(p)
-        h = modulo(g, claveprivada, p)
+        q = generarPrimo()
+        g = random.randint(2, q)
+        claveprivada = generarClave(q)
+        h = modulo(g, claveprivada, q)
         clavepublica = (g, h)
         
         print("")        
-        print("p:", p)
+        print("p:", q)
         print("g:", g)
         print("h:", h)
         print("clave privada:", claveprivada)
@@ -91,7 +124,12 @@ while True:
         
     elif(opcion == "2"):
         print("Encriptar mensaje")
+        msg = input("Ingrese mensaje a encriptar:\n")
+        en_msg, p = encrypt(msg, q, h, g, claveprivada)
     elif(opcion == "3"):
         print("Decriptar mensaje")
+        decriptado = decrypt(en_msg, p, claveprivada, q)
+        dmsg = ''.join(decriptado)
+        print(dmsg)
     elif(opcion == "4"):
         break
